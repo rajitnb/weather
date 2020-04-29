@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ city }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <script src="https://kit.fontawesome.com/87e3361758.js" crossorigin="anonymous"></script>
+  </head>
+  <style>
+      html {background-image: url('https://images.unsplash.com/photo-1517758478390-c89333af4642?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80'); background-repeat: no-repeat;background-size: 100% 100%;height: 1500px;}
+      .btn{
+    border: 10px solid #1a1a1a;
+    display: inline-block;
+    padding: 10px;
+    position: relative;
+    text-align: center;
+    margin-top: 10px;
+    transition: background 600ms ease, color 600ms ease;
+}
+
+    .toggle{
+        display: none;
+    }
+    .toggle + label{
+        cursor: pointer;
+        min-width: 60px;
+    }
+    .toggle+label:hover{
+        background: none;
+        color: #1a1a1a;
+    }
+    .toggle+label:after{
+        background: #1a1a1a;
+        content: "";
+        height: 100%;
+        position: absolute;
+        top: 0;
+        transition: left 200ms cubic-bezier(0.77, 0, 0.175, 1);
+        width: 100%;
+        z-index: -1;
+    }
+    .toggle-left+label{
+        border-right: 0;
+    }
+    .toggle-left+label:after{
+        left: 100%;
+    }
+    .toggle-right+label{
+        margin-left: -5px;
+    }
+    .toggle-right+label:after{
+        left: -100%;
+    }
+    .toggle:checked+label{
+        cursor: default;
+        color: #fff;
+        transition: color 200ms;
+    }
+    .toggle:checked+label:after{
+        left: 0;
+    }
+      .rows{
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+      }
+      .columns.hours, .columns.days{
+          width: 980px;
+      }
+      .hours{
+        overflow-x: scroll;
+      }
+      .day{
+          width: 140px;
+      }
+      .home{
+          cursor: pointer;
+      }
+      .is-ancestor{
+          max-height:max-content;
+      }
+      .current{
+          align-items: center;
+      }
+      .current-image{
+          justify-content: center;
+      }
+      .centered-element {
+        height: 100px;
+        width: 100px;
+        position: absolute;
+        left: 20%;
+        margin-left: 70px;
+        top: 30%;
+        margin-top: -30px;
+        }
+        * {box-sizing: border-box}
+        /* Style the tab */
+        .tab {
+        float: left;
+        border: none;
+        background-color: black;
+        width: 13%;
+        }
+        /* Style the buttons that are used to open the tab content */
+        .tab button {
+        display: block;
+        background-color: #002d33;
+        color: white;
+        padding: 22px 16px;
+        width: 100%;
+        border: none;
+        outline: none;
+        text-align: left;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: large;
+        font-weight: bold;
+        }
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+        background-color: lightgray;
+        color: black;
+        font-family: forte;
+        }
+        /* Create an active/current "tab button" class */
+        .tab button.active {
+        background-color: rgba(132,255,255,0.6);
+        color: black;
+        font-family: cooper;
+        }
+       
+        /* Style the tab content */
+        .tabcontent {
+        float: left;
+        padding: 0px 12px;
+        outline: none;
+        border: none;
+        width: 1700px;
+        border-left: none;
+        height: 900px;
+        }
+        .downloadbtn {
+        background-color: DodgerBlue;
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        cursor: pointer;
+        font-size: 20px;
+        }
+        /* Darker background on mouse-over */
+        .downloadbtn:hover {
+        background-color: RoyalBlue;
+        }
+        .current-content{
+            max-height: 285px;
+        }
+  </style>
+  <script type="text/javascript">
+    $(document).ready(function(){
+        
+        function timeLoad(){
+            $.ajax({
+                url: '{% url "detail_city" city %}',
+                success: function(response){
+                    $('.current-time').replaceWith($(response['f']).find('.current-time'));
+                }
+            });
+        }
+        $(function(){
+            setInterval(timeLoad, 1000);
+        });
+
+        $(".home").click(function(){
+            window.location.href = "{% url 'home' %}"
+        });
+        $(".toggle").click(function(event){
+            var units = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "detail_city" city %}',
+                data: {"units": units, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                success: function(response){
+                    $('.hours').replaceWith($(response['f']).find('.hours'));
+                    $('.days').replaceWith($(response['f']).find('.days'));
+                    $('.current-units').replaceWith($(response['f']).find('.current-units'));
+                    $('.banner-unit').replaceWith($(response['f']).find('.banner-unit'));
+                    $('.additional').replaceWith($(response['f']).find('.additional'));
+                }
+            });
+        });
+    });
+    function opentask(evt, task){
+        // Declare all variables
+        var i, tabcontent, tablinks;
+
+        // Get all elements with class="tabcontent" and hide them
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        // Get all elements with class="tablinks" and remove the class "active"
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+        // Show the current tab, and add an "active" class to the link that opened the tab
+        document.getElementById(task).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+    var dat2={{dd|safe}};
+    var data ={{ hd|safe }};
+    
+    console.log(data)
+    function download_csv() {
+        var csv = '\nHourly Weather Forecast\n';
+        csv+= '\nTime,Temperature ({{unit}}), Feels like ({{unit}}), Pressure, Humidity, Dew Point ({{unit}}), Clouds, Wind Speed ({{speed}}), Wind Deg, Description\n';
+        data.forEach(function(row) {
+                csv += row.join(',');
+                csv += "\n";
+        });
+                
+        csv +="\n";
+        
+        csv +='\n Weekly Forecast\n\n Day, Date, Sunrise Time, Sunset Time, Min temp ({{unit}}), Max temp ({{unit}}), Feels like ({{unit}}), Pressure, Humidity, Dew Point ({{unit}}), Clouds, Wind Speed ({{speed}}), Wind Deg, Description\n';
+        dat2.forEach(function(row){
+            csv += row.join(',');
+            csv += "\n";
+            
+        }); 
+        
+        console.log(csv);
+        
+        var hiddenElement = document.createElement('a');
+        hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+        hiddenElement.target = '_blank';
+        hiddenElement.download = 'Weather_Forecast_{{ city }}.csv';
+        hiddenElement.click();
+    }
+</script>
+  <body>
+    <div class="tile is-ancestor is-gapless has-background-dark current-content">
+        <div class="tile is-3">
+            <div class="columns is-gapless is-multiline current" style="background-color: #80deea">
+                <div class="column is-6 has-text-centered">
+                    <article class="has-text-weight-bold title is-size-1 is-family-code is-uppercase is-italic">
+                        {{ city }}
+                    </article>
+                </div>
+                <div class="column is-6 has-text-centered banner-unit">
+                    <article class="title is-size-2 has-text-weight-semibold is-family-code">
+                        {{ hourly.0.temp }}{{ unit }}
+                    </article>
+                </div>
+                <div class="column is-6 is-flex current-image">
+                    <figure class="image is-128x128">
+                        <img src="http://openweathermap.org/img/w/{{ current.icon }}.png" alt="Image">
+                    </figure>
+                </div>
+                <div class="column is-6 has-text-centered">
+                    <article class="subtitle is-size-3 is-family-code">
+                        {{ current.description }}
+                    </article>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile is-parent">
+            <article class="tile is-child box current-time has-text-white" style="background-color: #0097a7;">
+                <p class="title is-marginless is-size-1"> {{ current.weekday }} </p>
+                <p class="subtitle is-size-2 is-marginless"> {{ current.date }} </p>
+                <p class="subtitle is-size-2"> {{ time }} </p>
+                <p class="is-size-3"> Sunrise: {{ current.sunrise }}&emsp;&emsp;&emsp;&emsp;Sunset: {{ current.sunset }} </p>
+            </article>
+        </div>
+        <div class="tile is-parent current-units">
+            <article class="tile is-child box temperature has-text-white" style="background-color: #0097a7;">
+                <p class="title is-size-3">Temperature</p>
+                <p class="is-size-4 has-text-weight-semibold">Current: {{ hourly.0.temp }}{{ unit }} </p>
+                <p class="is-size-4">Feels like: {{ current.feels }}{{ unit }} </p>
+                <p class="is-size-4">Max: {{ current.max }}{{ unit }} </p>
+                <p class="is-size-4">Min: {{ current.min }}{{ unit }} </p>
+                <p class="is-size-4">Dew Point: {{ current.dew }}{{ unit }} </p>
+            </article>
+        </div>
+        <div class="tile is-parent">
+            <article class="tile is-child box has-text-white" style="background-color: #0097a7;">
+                <p class="title is-marginless is-size-3">Additional Parameters</p>
+                <p class="is-size-5">Pressure: {{ current.pressure }} hPa </p>
+                <p class="is-size-5">Humidity: {{ current.humidity }} % </p>
+                <p class="is-size-5">Precipitation: {{ current.rain }} mm </p>
+                <p class="is-size-5 additional">Wind Speed: {{ current.wind_speed}} {{ speed }} </p>
+                <p class="is-size-5">Wind Direction: {{ current.wind_dir }}° </p>
+                <p class="is-size-5">Cloudiness: {{ current.clouds}} % </p>
+                <p class="is-size-5">UV Index: {{ current.uvi }} </p>
+                <div class="level-right">
+                    {% if units == 'imperial' %}
+                    <input id="toggle-on" class="toggle toggle-left" name="toggle" value="imperial" type = "radio" checked>
+                    <label for="toggle-on" class="btn is-size-5">° F</label>
+                    <input id="toggle-off" class="toggle toggle-right" name="toggle" value="metric" type="radio">
+                    <label for="toggle-off" class="btn is-size-5">° C</label>
+                    {% else %}
+                    <input id="toggle-on" class="toggle toggle-left" name="toggle" value="imperial" type = "radio">
+                    <label for="toggle-on" class="btn is-size-5">° F</label>
+                    <input id="toggle-off" class="toggle toggle-right" name="toggle" value="metric" type="radio" checked>
+                    <label for="toggle-off" class="btn is-size-5">° C</label>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+    </div>
+    
+    
+    <section class="section">
+
+        <div class="tab">
+            <button class="tablinks is-size-3 home">
+                <div class="icon is-large has-text-warning home has-background-dark is-pulled-left">
+                    <i class="fas fa-home"></i>
+                </div>Home</button>
+            <button class="tablinks is-size-3 active" onclick="opentask(event, 'Forecast')">Forecast</button>
+            <button class="tablinks is-size-3" onclick="opentask(event, 'Event')">Activities</button>
+            <button class="tablinks is-size-3" onclick="opentask(event, 'Precaution')">Precautions</button>
+        </div>
+          
+        <div id="Forecast" class="tabcontent" style="display: block">
+            <!-- <span onclick="this.parentElement.style.display='none'" style="font-weight: bolder; text-align: right;font-size: 20px;">&times;</span> -->
+            <h3 class="is-size-1" style="font-weight: bolder; color: black; text-align: center; background-color: rgba(21,104,97,0.3); width: 1670px;">Forecast for {{city}}</h3>
+           
+            <div class="margin-top" style="text-align: right;">
+                <button class="downloadbtn" onclick="download_csv()" ><i class="fa fa-download"></i> Download weather report</button> 
+            </div>
+        
+            <br><br>
+            <div class="centered-element">
+                <br><br><br><br><br><br><br><br><br>
+                <div class="container">
+                    <div class="columns hours" style="background-color: #e0f7fa; width: 1200px; height: 200px; color: black;">
+                        {% for hour in hourly %}
+                        {% if not forloop.first %}
+                        <div class="column rows">
+                            <div class="row is-size-5" style="font-size: large;font-weight: bold;">
+                                {{ hour.dt }}
+                            </div>
+                            <div class="row">
+                                <img src="http://openweathermap.org/img/w/{{ hour.icon }}.png" alt="Image">
+                            </div>
+                            <div class="row is-size-5" style="color: black;">
+                                {{ hour.temp }}{{ unit }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <br><br><br><br>
+                <div class="container">
+                    <div class="columns days" style="background-color: rgba(0,45,51,0.9); font-family: verdana; font-size: 14px; color: white; height: 300px; width: 1200px;">
+                        {% for day in daily %}
+                        <div class="rows day" style="width: 1200px; height: 500px;">
+                            <div class="row is-size-5">
+                                {{ day.weekday }}
+                            </div>
+                            <div class="row is-size-5">
+                                {{ day.date }}
+                            </div>
+                            <div class="row" style="height: 50px;">
+                                <img src="http://openweathermap.org/img/w/{{ day.icon }}.png" alt="Image">
+                            </div>
+                            <div class="row is-size-6" style="height: 20px;">
+                                Max: {{ day.max }}{{ unit }}
+                            </div>
+                            <div class="row is-size-6" style="height: 20px;">
+                                Min: {{ day.min }}{{ unit }}
+                            </div>
+                            <div class="row is-size-6" style="height: 70px;">
+                                Feels like: {{ day.feels }}{{ unit }}
+                            </div>
+                            <div class="row is-size-6" style="height: 30px;font-weight: bold;color: #ffcc99;">
+                                Sunrise: {{ day.sunrise }}
+                            </div>
+                            <div class="row is-size-6" style="font-weight: bold;color: #ffcc99;">
+                                Sunset: {{ day.sunset }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="Event" class="tabcontent" style="display: none" >
+            <!-- <span onclick="this.parentElement.style.display='none'" style="font-weight: bolder; text-align: right;font-size: 20px;">&times;</span> -->
+            <!-- <h3 style="font-weight: bolder; color: black; text-align: center;font-size:x-large;">&emsp; &emsp;Fun things to do around you today!!</h3>
+            <p style="text-align: center;">Create event content here</p>  -->
+            <!-- <h1 class="title is-size-1 has-text-white-ter">
+                Activities in {{ city }}
+            </h1> -->
+            <h3 class="is-size-1" style="font-weight: bolder; color: black; text-align: center; background-color: rgba(21,104,97,0.3); width: 1670px;">Activities in {{city}}</h3>
+            <br><br>
+            <div class="tile is-ancestor">
+                {% for activity in activities %}
+                <div class="tile is-parent">
+                  <article class="tile is-child notification" style="background-color: #e0f7fa;">
+                    <p class="title is-size-2">{{activity.s40}}</p>
+                    <div class="content">
+                    {% for x in activity.s %}
+                      <p class="is-size-5 has-text-weight-medium">{{x}}</p>
+                    {% endfor %}
+                    </div>
+                  </article>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+          
+        <div id="Precaution" class="tabcontent" style="display: none">
+            <!-- <span onclick="this.parentElement.style.display='none'" style="font-weight: bolder; text-align: right;font-size: 20px;">&times;</span> -->
+            <!-- <h3 style="font-weight: bolder; color: black; text-align: center;font-size:x-large;">&emsp; &emsp;Precautinary measures for current weather</h3>
+            <p style="text-align: center;">Create Precaution content here</p> -->
+            <!-- <h1 class="title is-size-1 has-text-white">
+                Precautions to be taken in {{ city }}
+            </h1> -->
+            <h3 class="is-size-1" style="font-weight: bolder; color: black; text-align: center; background-color: rgba(21,104,97,0.3); width: 1670px;">Precautions to be taken in {{city}}</h3>
+            <br><br>
+            <div class="tile is-ancestor">
+              {% for precaution in precautions %}
+              <div class="tile is-parent">
+                <article class="tile is-child notification" style="background-color: #e0f7fa;">
+                  <p class="title is-size-2">{{precaution.s10}}</p>
+                  <div class="content">
+                  {% for x in precaution.s %}
+                    <p class="is-size-5 has-text-weight-medium">{{x}}</p>
+                  {% endfor %}
+                  </div>
+                </article>
+              </div>
+              {% endfor %}
+            </div>
+
+        </div>
+    </section>
+    <!-- <footer class="footer">
+    </footer> -->
+</body>
+</html>

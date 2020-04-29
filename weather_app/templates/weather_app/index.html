@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>What's the weather like?</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/bulma-ribbon/dist/css/bulma-ribbon.min.css">
+</head>
+<style>
+    .btn{
+    border: 3px solid #1a1a1a;
+    display: inline-block;
+    padding: 10px;
+    position: relative;
+    text-align: center;
+    background: #ffffff;
+    transition: background 600ms ease, color 600ms ease;
+    color: black;
+}
+
+    .toggle{
+        display: none;
+    }
+    .toggle + label{
+        cursor: pointer;
+        min-width: 60px;
+    }
+    .toggle+label:hover{
+        background: none;
+        color: #1a1a1a;
+    }
+    .toggle+label:after{
+        background: #ea6e4b;
+        content: "";
+        height: 100%;
+        position: absolute;
+        top: 0;
+        transition: left 200ms cubic-bezier(0.77, 0, 0.175, 1);
+        width: 100%;
+        z-index: -1;
+    }
+    .toggle-left+label{
+        border-right: 0;
+    }
+    .toggle-left+label:after{
+        left: 100%;
+    }
+    .toggle-right+label{
+        margin-left: -5px;
+    }
+    .toggle-right+label:after{
+        left: -100%;
+    }
+    .toggle:checked+label{
+        cursor: default;
+        color: #1a1a1a;
+        transition: color 200ms;
+        font-weight: bolder;
+        background:#ea6e4b;
+    }
+    .toggle:checked+label:after{
+        left: 0;
+    }
+    .more{
+        position: relative;
+        bottom: 0;
+        right: 0;
+    }
+    .flex {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center
+    }
+    
+    .grid {
+        display: grid;
+        align-content: end;
+    }
+    .top{
+        align-self: flex-start;
+    }
+    .blink-two {
+    animation: blinker-two 3s linear infinite;
+    }
+    @keyframes blinker-two {  
+    100% { opacity: 0; }
+    }
+    .warning {
+    padding: 10px;
+    background-color: cyan;
+    color: black;
+    }
+    .alert {
+    padding: 10px;
+    background-color: #f44336;
+    color: white;
+    }
+    .closebtn {
+    margin-left: 15px;
+    color: black;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $(".toggle").click(function(event){
+            var units = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "home" %}',
+                data: {"units": units, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                success: function(response){
+                    $('#weather').replaceWith($(response['f']).find('#weather'));
+                }
+            });
+        });
+    });
+</script>
+<body>
+    <section class="hero" style="background-image: url('https://media2.giphy.com/media/6AC0bOyUljIpa/source.gif'); background-repeat: no-repeat; background-size: 100% 100%;">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title has-text-white is-size-1 has-text-weight-bold">
+                    What's the weather like?
+                </h1>
+            </div>
+        </div>
+
+        <div class="container is-fluid" id = "units">
+            <div class="columns is-pulled-right">
+                <div class="column is-narrow">
+                    {% if units == 'imperial' %}
+                    <input id="toggle-on" class="toggle toggle-left" name="toggle" value="imperial" type = "radio" checked>
+                    <label for="toggle-on" class="btn is-size-5">° F</label>
+                    <input id="toggle-off" class="toggle toggle-right" name="toggle" value="metric" type="radio">
+                    <label for="toggle-off" class="btn is-size-5">° C</label>
+                    {% else %}
+                    <input id="toggle-on" class="toggle toggle-left" name="toggle" value="imperial" type = "radio">
+                    <label for="toggle-on" class="btn is-size-5">° F</label>
+                    <input id="toggle-off" class="toggle toggle-right" name="toggle" value="metric" type="radio" checked>
+                    <label for="toggle-off" class="btn is-size-5">° C</label>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <section class="section">
+            <div class="container">
+                <div class="columns">
+                    <div class="column is-offset-4 is-4">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    {{ form.name }}
+                                </div>
+                                <div class="control">
+                                    <button class="button is-info">
+                                        Add City
+                                    </button>
+                                </div>
+                            </div>
+                            {% if message %}
+                            <div class="notification {{ message_class }}">{{ message }}</div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <div style= "background-image: url('https://img4.goodfon.com/wallpaper/nbig/8/e6/noch-mlechnyi-put-nebo-zvezdy-pustynia.jpg'); background-repeat:no-repeat ;background-size: 100% 100%; height: 1000px;">
+        <section class="section">
+            <div class="container">
+                <div class="columns" id="weather">
+                    <div class="column is-offset-4 is-4">
+                        {% for weather in weather_data %}
+                            <div class="box has-ribbon" style="background-color: #8AA4B0;">                            
+                                {% if forloop.first %}
+                                <div class="ribbon is-medium has-text-weight-bold is-warning">Current Location</div>
+                                {% endif %}
+                                <article class="media">
+                                    <div class="media-left">
+                                        <figure class="image is-50x50">
+                                            <img src="http://openweathermap.org/img/w/{{ weather.icon }}.png" alt="Image">
+                                        </figure>
+                                    </div>
+                                    <div class="media-content">
+                                        <div class="content">
+                                            <p>
+                                                <span class="title">{{ weather.city }}</span>
+                                                <br>
+                                                <span class="subtitle is-size-4">{{ weather.temperature }}{{ unit }}</span>
+                                                <br>
+                                                <span class="is-size-5">{{ weather.description }}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {% if not forloop.first %}
+                                    <div class="media-right">
+                                        <a href="{% url 'delete_city' weather.city %}">
+                                            <button class="delete" style="float:right"></button>
+                                        </a>
+                                    <div>                                  
+                                    {% endif %}
+                                    <a href="{% url 'detail_city' weather.city %}">
+                                        <br><br><br><button class="button is-link">Tell me more</button>
+                                    </a>
+                                </article>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        {%for weather in weather_data %}
+                
+                            {%if forloop.first%} 
+                                
+                                {%if weather.id == 202 or weather.id == 212 or weather.id == 232 or weather.id == 314 or weather.id == 503 or weather.id == 511 or weather.id == 504 or weather.id == 522 or weather.id == 602 or weather.id == 622 or weather.id == 731 or weather.id == 751 or weather.id == 762 or weather.id == 781 or weather.id == 771 or weather.id == 761%}
+                                
+                                    <br>
+                                    <div class="alert">
+                                        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+                                        
+                                            <p>Click on the "x" symbol to close the alert message.</p>
+                                            <p class="blink-two is-size-3 has-text-weight-bold has-text-black">
+                                            <strong style="font-size:20px">ALERT! We are seeing </strong>{{weather.description}}<strong> in </strong>{{weather.city}}
+                                            </p>
+                                        
+                                    </div>
+                                {% endif %}
+                                {%if weather.id == 211 or weather.id == 231 or weather.id == 312 or weather.id == 502 or weather.id == 613 or weather.id == 621 or weather.id == 701 or weather.id == 721 or weather.id == 711 or weather.id == 741 %}             
+                                    <br>
+                                    <div class="warning">
+                                        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+                                            <p>Click on the "x" symbol to close the alert message.</p>
+                                            <p class="blink-two">
+                                            <br><strong style="font-size:20px">WARNING! We are seeing </strong>{{weather.description}}<strong> in </strong>{{weather.city}}
+                                            </p>    
+                                    </div>
+                                {% endif %}
+                            {%endif%}
+                
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- <footer class="footer">
+    </footer> -->
+</body>
+</html>
